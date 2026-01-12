@@ -1,0 +1,13 @@
+version: "3.8"
+
+services:
+  inference:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: inference
+    environment:
+      - MODEL_PATH=/app/models/function-gemma-270m-it-tuned
+    volumes:
+      - ./models:/app/models:ro
+    restart: unless-stopped

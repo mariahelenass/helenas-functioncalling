@@ -1,6 +1,8 @@
 import os
 import torch
 
+torch.set_num_threads(os.cpu_count())
+
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
 model_path: str = os.getenv("MODEL_PATH")
@@ -10,7 +12,8 @@ tokenizer = AutoTokenizer.from_pretrained(model_path, local_files_only=True)
 model = AutoModelForCausalLM.from_pretrained(
             model_path,
             local_files_only=True,
-            trust_remote_code=True
+            trust_remote_code=True,
+            torch_dtype=torch.float32
         )
 
 device = torch.device("cpu")
@@ -18,13 +21,50 @@ model.to(device)
 
 model.eval()
 
-system_prompt = "você é um assistente legal."
+if hasattr(torch, 'compile'):
+    model = torch.compile(model, mode="reduce-overhead")
 
-TOOLS = []
+system_prompt = """Você é um assistente especializado em chamadas de função.
+Regras importantes:
+- Chame **apenas** funções listadas
+- Preencha corretamente todos os parâmetros obrigatórios
+- Se a solicitação não corresponder a nenhuma função disponível, retorne: "Não especializado para esse tipo de ação"
+"""
 
-def run_inference(input: str, max_tokens: int = 128) -> str:
+TOOLS = [
+    {
+        "type": "function",
+        "function": {
+            "name": "pagamento",
+            "description": "Realiza um pagamento via Pix",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "valor": {
+                        "type": "number",
+                        "description": "Valor do pagamento em reais (BRL)"
+                    },
+                    "forma_pagamento": {
+                        "type": "string",
+                        "description": "Forma de pagamento (pix, debito, credito)"
+                    },
+                    "imprimir": {
+                        "type": "boolean",
+                        "description": "Indica se deve imprimir o comprovante"
+                    }
+                },
+                "required": ["valor", "forma_pagamento"]
+            }
+        }
+    }
+]
 
-    messages = []
+def run_inference(input: str, max_tokens: int = 64) -> str:
+
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": input}
+    ]
 
     inputs = tokenizer.apply_chat_template(
                 messages,
@@ -42,7 +82,7 @@ def run_inference(input: str, max_tokens: int = 128) -> str:
                 )
 
         generated = tokenizer.decode(
-                    outputs[0][len(inputs["inputs_ids"][0]):],
+                    outputs[0][len(inputs["input_ids"][0]):],
                     skip_special_tokens=False
                 )
 
