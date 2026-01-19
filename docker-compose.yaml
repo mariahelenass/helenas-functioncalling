@@ -1,4 +1,3 @@
-version: "3.8"
 
 services:
   inference:
@@ -11,3 +10,17 @@ services:
     volumes:
       - ./models:/app/models:ro
     restart: unless-stopped
+    ports:
+      - "8080:8080"
+
+  streamlit:
+    build:
+      context: test-front
+      dockerfile: Dockerfile
+    container_name: front
+    depends_on:
+      - inference
+    restart: unless-stopped
+    ports:
+      - "8501:8501"
+

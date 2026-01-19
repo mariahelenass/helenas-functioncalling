@@ -2,12 +2,17 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
+RUN apt-get update && apt-get install -y \
+    ffmpeg \
+    libsndfile1 \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY requirements.txt .
 
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-ENV MODEL_PATH=/app/models/function-gemma-270m-it-tuned
+ENV PYTHONUNBUFFERED=1
 
-CMD ["python", "inference.py"]
+CMD ["python", "action_api.py"]

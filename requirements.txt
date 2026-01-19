@@ -3,3 +3,14 @@ transformers>=4.40.0
 sentencepiece>=0.1.99
 protobuf>=4.21.0
 accelerate>=0.27.0
+
+python-multipart
+fastapi
+uvicorn[standard]
+psutil
+uvloop
+httptools
+nemo_toolkit[asr]
+pydub
+ 
+ 
