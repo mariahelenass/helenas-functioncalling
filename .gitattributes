@@ -3,3 +3,4 @@ quantizados-gguf/*.gguf filter=lfs diff=lfs merge=lfs -text
 models/* filter=lfs diff=lfs merge=lfs -text
 models/function-gemma-tuned-pos-actions filter=lfs diff=lfs merge=lfs -text
 function-gemma-tuned-pos-actions filter=lfs diff=lfs merge=lfs -text
+models/gemma-finetuned-v2/ filter=lfs diff=lfs merge=lfs -text
