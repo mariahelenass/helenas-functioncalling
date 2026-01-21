@@ -6,7 +6,7 @@ services:
       dockerfile: Dockerfile
     container_name: inference
     environment:
-      - MODEL_PATH=/app/models/function-gemma-270m-it-tuned
+      - MODEL_PATH=/app/models/gemma-finetuned-v2
     volumes:
       - ./models:/app/models:ro
     restart: unless-stopped
